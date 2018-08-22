@@ -20,7 +20,11 @@ static const int xmppLogLevel = XMPP_LOG_LEVEL_INFO | XMPP_LOG_FLAG_SEND_RECV; /
 static const int xmppLogLevel = XMPP_LOG_LEVEL_WARN;
 #endif
 
-NSString *const XMLNS_XMPP_MAM = @"urn:xmpp:mam:";
+#ifdef XMPP_MAM_1
+NSString *const XMLNS_XMPP_MAM = @"urn:xmpp:mam:1";
+#else
+NSString *const XMLNS_XMPP_MAM = @"urn:xmpp:mam:2";
+#endif
 static NSString *const QueryIdAttributeName = @"queryid";
 
 
@@ -34,16 +38,6 @@ static NSString *const QueryIdAttributeName = @"queryid";
 @implementation XMPPMessageArchiveManagement
 @synthesize resultAutomaticPagingPageSize = _resultAutomaticPagingPageSize;
 @synthesize xmppIDTracker = _xmppIDTracker;
-
-
-- (instancetype)init
-{
-	self = [super init];
-	if (self) {
-        _xmppMAMVersion = @"2";
-	}
-	return self;
-}
 
 - (instancetype) initWithDispatchQueue:(dispatch_queue_t)queue {
     if (self = [super initWithDispatchQueue:queue]) {
@@ -75,7 +69,7 @@ static NSString *const QueryIdAttributeName = @"queryid";
 - (void)retrieveMessageArchiveAt:(XMPPJID *)archiveJID withFields:(NSArray *)fields withResultSet:(XMPPResultSet *)resultSet {
     NSXMLElement *formElement = [NSXMLElement elementWithName:@"x" xmlns:@"jabber:x:data"];
     [formElement addAttributeWithName:@"type" stringValue:@"submit"];
-    [formElement addChild:[XMPPMessageArchiveManagement fieldWithVar:@"FORM_TYPE" type:@"hidden" andValue:[self xmppMAM]]];
+    [formElement addChild:[XMPPMessageArchiveManagement fieldWithVar:@"FORM_TYPE" type:@"hidden" andValue: XMLNS_XMPP_MAM]];
     
     for (NSXMLElement *field in fields) {
         [formElement addChild:field];
@@ -96,7 +90,7 @@ static NSString *const QueryIdAttributeName = @"queryid";
 		NSString *queryId = [XMPPStream generateUUID];
         [_outstandingQueryIds addObject:queryId];
 		
-		NSXMLElement *queryElement = [NSXMLElement elementWithName:@"query" xmlns:[self xmppMAM]];
+		NSXMLElement *queryElement = [NSXMLElement elementWithName:@"query" xmlns: XMLNS_XMPP_MAM];
 		[queryElement addAttributeWithName:QueryIdAttributeName stringValue:queryId];
 		[iq addChild:queryElement];
 
@@ -119,7 +113,7 @@ static NSString *const QueryIdAttributeName = @"queryid";
 	
 	if ([[iq type] isEqualToString:@"result"]) {
 		
-		NSXMLElement *finElement = [iq elementForName:@"fin" xmlns:[self xmppMAM]];
+		NSXMLElement *finElement = [iq elementForName:@"fin" xmlns: XMLNS_XMPP_MAM];
         NSString *queryId = [finElement attributeStringValueForName:QueryIdAttributeName];
 		NSXMLElement *setElement = [finElement elementForName:@"set" xmlns:@"http://jabber.org/protocol/rsm"];
 		
@@ -168,7 +162,7 @@ static NSString *const QueryIdAttributeName = @"queryid";
 		XMPPIQ *iq = [XMPPIQ iqWithType:@"get"];
 		[iq addAttributeWithName:@"id" stringValue:[XMPPStream generateUUID]];
 
-		NSXMLElement *queryElement = [NSXMLElement elementWithName:@"query" xmlns:[self xmppMAM]];
+		NSXMLElement *queryElement = [NSXMLElement elementWithName:@"query" xmlns: XMLNS_XMPP_MAM];
 		[iq addChild:queryElement];
 
 		[self.xmppIDTracker addElement:iq
@@ -195,10 +189,6 @@ static NSString *const QueryIdAttributeName = @"queryid";
 		return YES;
 	}
 	return NO;
-}
-
-- (NSString *)xmppMAM {
-	return [XMLNS_XMPP_MAM stringByAppendingString:self.xmppMAMVersion];
 }
 
 - (void)deactivate {

@@ -27,7 +27,6 @@ extern NSString *const XMLNS_XMPP_MAM;
  Use NSNotFound to indicate that there is no client-side page size preference.
  */
 @property (readwrite, assign) NSInteger resultAutomaticPagingPageSize;
-@property (strong, nonatomic) NSString *xmppMAMVersion;
 
 - (void)retrieveMessageArchiveWithFields:(nullable NSArray<NSXMLElement*> *)fields
                            withResultSet:(nullable XMPPResultSet *)resultSet;
