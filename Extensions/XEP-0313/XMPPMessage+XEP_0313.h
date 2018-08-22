@@ -12,5 +12,13 @@ NS_ASSUME_NONNULL_BEGIN
 @interface XMPPMessage (XEP_0313)
 /** XEP-0313: MAM <result> element */
 @property (nonatomic, nullable, readonly) NSXMLElement *mamResult;
+
+- (BOOL)isMessageArchive;
+
+- (XMPPMessage *) messageForForwardedArchiveMessage;
+- (NSString *) resultId;
+- (NSXMLElement *) delayElement;
+- (NSString *) delayStamp;
+
 @end
 NS_ASSUME_NONNULL_END
